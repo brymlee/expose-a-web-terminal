@@ -4,6 +4,7 @@ RUN mkdir expose-a-web-terminal
 WORKDIR expose-a-web-terminal
 COPY package.json package.json
 RUN npm i
+RUN npm update
 COPY src src
 COPY tsconfig.json tsconfig.json
 RUN npm run compile
