@@ -8,31 +8,39 @@ const stub = (type: string) => ({
       output: OutputFactory.makeErrorOutput({ source: 'Command not found', type: type, }),
     };
   },
-  'optDef': {}
+  optDef: {}
+});
+
+const commandMapping = () => ({
+  cat: stub('cat'),
+  cd: stub('cd'),
+  clear: stub('clear'),
+  cp: stub('cp'),
+  echo: {
+    'function': (_state, opts) => {
+      return {
+        output: OutputFactory.makeTextOutput(opts.length === 0 ? '' : opts.reduce((a, b) => `${a} ${b}`)),
+      };
+    },
+    optDef: {},
+  },
+  head: stub('head'),
+  history: stub('history'), 
+  ls: stub('ls'),
+  mkdir: stub('mkdir'),
+  printenv: stub('printenv'),
+  pwd: stub('pwd'),
+  rm: stub('rm'),
+  rmdir: stub('rmdir'),
+  tail: stub('tail'),
+  touch: stub('touch'),
+  whoami: stub('whoami'),
 });
 
 export const Application = () => {
   const [defaultState, setState] = useState({
     emulatorState: EmulatorState.create({
-      commandMapping: CommandMapping.create({
-        ...defaultCommandMapping,
-        'cat': stub('cat'),
-        'cd': stub('cd'),
-        'clear': stub('clear'),
-        'cp': stub('cp'),
-        'echo': stub('echo'),
-        'head': stub('head'),
-        'history': stub('history'), 
-        'ls': stub(''),
-        'mkdir': stub('mkdir'),
-        'printenv': stub('printenv'),
-        'pwd': stub('pwd'),
-        'rm': stub('rm'),
-        'rmdir': stub('rmdir'),
-        'tail': stub('tail'),
-        'touch': stub('touch'),
-        'whoami': stub('whoami'),
-      }),
+      commandMapping: CommandMapping.create(commandMapping()),
     }),
     windowHeight: '0px',
     inputStr: '',
@@ -46,7 +54,7 @@ export const Application = () => {
           output: OutputFactory.makeTextOutput(user),
         };
       },
-      'optDef': {},
+      optDef: {},
     }),
     [defaultState.user]
   );
@@ -57,8 +65,8 @@ export const Application = () => {
       return {
         ...defaultState,
         emulatorState: s.setCommandMapping(CommandMapping.create({
-          ...defaultCommandMapping, 
-          'whoami': whoami,
+          ...commandMapping(), 
+          whoami: whoami,
         })),
       };
     }, 
