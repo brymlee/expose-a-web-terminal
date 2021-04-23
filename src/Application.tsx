@@ -1,48 +1,47 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ReactThemes, ReactTerminalStateless } from 'react-terminal-component';
-import { Outputs, OutputFactory, EmulatorState } from 'javascript-terminal';
+import { CommandMapping, defaultCommandMapping, Outputs, OutputFactory, EmulatorState, Emulator } from 'javascript-terminal';
 
 export const Application = () => {
-  const [isChangingState, setIsChangingState] = useState(false);
   const [state, setState] = useState({
-    emulatorState: EmulatorState.createEmpty(),
+    emulatorState: EmulatorState.create({
+      commandMapping: CommandMapping.create({
+        ...defaultCommandMapping,
+      }),
+    }),
+    windowHeight: '0px',
     inputStr: '',
   });
+  useEffect(() => {
+    setState((i) => ({
+      ...i,
+      windowHeight: `${window.innerHeight}px`,
+    }));
+    window.addEventListener('resize', (_e) => {
+      setState((i) => ({
+        ...i,
+        windowHeight: `${window.innerHeight}px`,
+      }));
+    });
+  }, [setState]);
   return (
-    <div onKeyPress={(e) => { 
-      if(!isChangingState){
-        setIsChangingState(true);
-        const { key } = e;
-        setState((i) => {
-          return {
-            ...i,
-            emulatorState: key === 'Enter' ? i.emulatorState.setOutputs(
-              Outputs.addRecord(
-                i.emulatorState.getOutputs(), 
-                OutputFactory.makeTextOutput('')
-              )
-            ) : i.emulatorState,
-          };
+    <ReactTerminalStateless 
+      theme={{ ...ReactThemes.hacker, height: state.windowHeight, }}
+      emulatorState={state.emulatorState}
+      inputStr={state.inputStr}
+      onInputChange={(inputStr) => { 
+        setState((i) => 
+          ({ 
+            ...i, 
+            inputStr: inputStr, 
+          })
+        ); 
+      }}
+      onStateChange={(emulatorState) => {
+        setState((i) => { 
+          return { ...i, inputStr: '', emulatorState: emulatorState, };
         });
-        setIsChangingState(false);
-      }
-    }}>
-      <ReactTerminalStateless 
-        theme={{ ...ReactThemes.hacker, height: `${window.innerHeight}px`, }}
-        emulatorState={state.emulatorState}
-        inputStr={state.inputStr}
-        onInputChange={(inputStr) => { 
-          setState((i) => 
-            ({ 
-              ...i, 
-              inputStr: inputStr, 
-            })
-          ); 
-        }}
-        onStateChange={(emulatorState) => {
-          setState((i) => ({ ...i, emulatorState: emulatorState, }));
-        }}
-      />
-    </div>
+      }}
+    />
   );
 };
