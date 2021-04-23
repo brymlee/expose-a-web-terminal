@@ -18,8 +18,11 @@ const commandMapping = () => ({
   cp: stub('cp'),
   echo: {
     'function': (_state, opts) => {
+      if(opts.length === 0){
+        return OutputFactory.makeTextOutput('');
+      } 
       return {
-        output: OutputFactory.makeTextOutput(opts.length === 0 ? '' : opts.reduce((a, b) => `${a} ${b}`)),
+        output: OutputFactory.makeTextOutput(opts.reduce((a, b) => `${a} ${b}`)),
       };
     },
     optDef: {},
@@ -45,6 +48,7 @@ export const Application = () => {
     windowHeight: '0px',
     inputStr: '',
     user: 'nameless',
+    multiLineOutputs: [] as string[],
   });
   const whoami = useMemo(
     () => ({
@@ -90,6 +94,7 @@ export const Application = () => {
       emulatorState={state.emulatorState}
       inputStr={state.inputStr}
       promptSymbol={`\/\/${state.user} \$ `}
+      clickToFocus={true}
       onInputChange={(inputStr) => { 
         setState((i) => 
           ({ 
@@ -100,7 +105,11 @@ export const Application = () => {
       }}
       onStateChange={(emulatorState) => {
         setState((i) => { 
-          return { ...i, inputStr: '', emulatorState: emulatorState, };
+          return { 
+            ...i, 
+            inputStr: '', 
+            emulatorState: emulatorState, 
+          };
         });
       }}
     />
